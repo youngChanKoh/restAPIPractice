@@ -1,5 +1,6 @@
 package com.example.restfulwebservice.user;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -11,7 +12,8 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
-@JsonIgnoreProperties(value= {"password"})   // @JsonIgnoreProperties를 통해 classLevel에서 무시할 값을 설정할 수 있다.
+//@JsonIgnoreProperties(value= {"password"})   // @JsonIgnoreProperties를 통해 classLevel에서 무시할 값을 설정할 수 있다.
+@JsonFilter("User Info")
 public class User {
     private Integer Id;
     @Size(min=2, message = "Name은 2글자 이상 입력해 주세요.")            // 회원의 이름은 최소 2글자 여야한다.
