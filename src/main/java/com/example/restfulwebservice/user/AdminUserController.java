@@ -3,6 +3,7 @@ package com.example.restfulwebservice.user;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -39,8 +40,9 @@ public class AdminUserController {
         return mapping;
     }
 
-    @GetMapping("/users/{id}")
-    public MappingJacksonValue retrieveUser(@PathVariable int id){
+    // GET /admin/users/1 -> /admin/v1/users/1
+    @GetMapping("/v1/users/{id}")
+    public MappingJacksonValue retrieveUserV1(@PathVariable int id){
         User user = service.findOne(id);
 
         if(user == null){
@@ -54,6 +56,33 @@ public class AdminUserController {
         FilterProvider filters = new SimpleFilterProvider().addFilter("User Info", filter);
 
         MappingJacksonValue mapping = new MappingJacksonValue(user);
+        mapping.setFilters(filters);
+
+        return mapping;
+    }
+
+    @GetMapping("/v2/users/{id}")
+    public MappingJacksonValue retrieveUserV2(@PathVariable int id){
+        User user = service.findOne(id);
+
+        if(user == null){
+            throw new UserNotFoundException(String.format("ID[%s] not found", id));
+        }
+
+        // User -> User2
+        UserV2 userV2 = new UserV2();
+        // BeanUtils란 SpringFrameWork에서 제공해주는 UtilClass로, Bean들 간의 관련되어 있는 작업들을 도와준다.
+        // 즉, 두 instance간에 공통적인 field가 있을 경우 해당값을 copy하는 기능도 BeanUtils에 포함되어 있다.
+        BeanUtils.copyProperties(user, userV2);
+        userV2.setGrade("VIP");
+
+
+        // Bean의 Property를 제어할 수 있도록 SimpleBeanPropertyFilter를 사용해보자.
+        SimpleBeanPropertyFilter filter = SimpleBeanPropertyFilter
+                .filterOutAllExcept("id", "name", "joinDate", "grade");   // 포함시키고자 하는 filter값 선언
+        FilterProvider filters = new SimpleFilterProvider().addFilter("UserInfoV2", filter);
+
+        MappingJacksonValue mapping = new MappingJacksonValue(userV2);
         mapping.setFilters(filters);
 
         return mapping;
